@@ -2,7 +2,7 @@
 Library               RequestsLibrary
 Library               String
 Library               OperatingSystem
-Library    Collections
+Library               Collections
 
 *** Keywords ***
 
@@ -39,3 +39,36 @@ Conferir se o usuario foi cadastrado corretamente
     Log    ${RESPOSTA}
     Dictionary Should Contain Item        ${RESPOSTA}    message    Cadastro realizado com sucesso
     Dictionary Should Contain Key        ${RESPOSTA}    _id
+
+
+
+Criar um produto novo
+    ${palavra_aleatoria}        Generate Random String    length=10    chars=[LETTERS]
+    ${palavra_aleatoria}        Convert To Lower Case    ${palavra_aleatoria}
+
+    Set Test Variable    ${PRODUTO}        ${palavra_aleatoria}
+
+Cadastrar o produto criado na ServeRest
+    Criar sessão na ServeRest
+    ${body}    Create Dictionary
+    ...        nome=${PRODUTO}
+    ...        preco= 350
+    ...        descricao=guarana zero
+    ...        quantidade=20
+    ...        administrador=true
+    Log        ${body}
+
+    ${resposta}    POST On Session
+    ...            alias=ServeRest
+    ...            url=/produtos
+    ...            json=${body}
+    
+    Status Should Be    401
+    Log         ${resposta.json()}
+    Set Test Variable    ${RESPOSTA}        ${resposta.json()}
+
+Conferir mensagem de retorno
+    Log    ${RESPOSTA}
+    Dictionary Should Contain Item        ${RESPOSTA}    message    Token de acesso ausente, inválido, expirado ou usuário do token não existe mais
+
+    
